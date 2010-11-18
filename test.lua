@@ -1,6 +1,6 @@
 -- test gpc library
 
-P=gpc
+local P=require"gpc"
 
 print(P.version)
 
@@ -9,6 +9,25 @@ function output(f,...)
   f:write(arg[i]," ")
  end
  f:write("\n")
+end
+
+function plottri(f,p,r,g,b,w)
+ if w=="stroke" then output(f,0,"setlinewidth") end
+ output(f,r,g,b,"setrgbcolor")
+ for c=1,p:get() do
+  local n=p:get(c)
+  local x1,y1=p:get(c,1)
+  local x2,y2=p:get(c,2)
+  for i=3,n do
+   local x,y=p:get(c,i)
+   output(f,x1,y1,"moveto")
+   output(f,x2,y2,"lineto")
+   output(f,x,y,"lineto")
+   output(f,"closepath")
+   x1,y1,x2,y2=x2,y2,x,y
+  end
+ end
+ output(f,w)
 end
 
 function plot(f,p,r,g,b,w)
@@ -37,8 +56,8 @@ end
 
 N=0
 function page(f,p,w,r,g,b)
- print(p:get(),w)
  N=N+1
+ print(N,p:get(),w)
  show(N,f,p,r,g,b,w)
 end
 
@@ -68,8 +87,10 @@ function test(file)
  if (d>0) then ymin=ymin-d ymax=ymax+d d=dx else xmin=xmin-d xmax=xmax+d d=dy end
  local f=assert(io.open(file,"w"))
  output(f,"%!PS-Adobe-2.0")
- output(f,"%%BoundingBox:",X0-5,Y0-5,X0+DX+5,Y0+DY+5)
+ output(f,"%%Title: gpc lua test")
+ output(f,"%%%BoundingBox:",X0-5,Y0-5,X0+DX+5,Y0+DY+5) -- inactive
  output(f,"%%Creator:",P.version)
+ output(f,"%%Pages:",9)
  output(f,"%%EndComments")
  output(f,"/setup {",X0,Y0,"translate",DX,DY,"scale")
  output(f,"1",d,"div dup scale",-xmin,-ymin,"translate")
@@ -81,14 +102,16 @@ function test(file)
  page(f,a-b,"diff",1,0.8,0.8)
  page(f,b-a,"diff",0.8,0.8,1)
  page(f,a^b,"xor",0.8,1,0.8)
+ page(f,a,"a",1,0.8,0.8)
+ plot=plottri
+ page(f,a:strip(),"strip",1,0.8,0.8)
  output(f,"%%EOF")
  f:close()
 end
 
 ------------------------------------------------------------------------------
 
-a=P.new()
-a:add{
+a=P.new():add{
 1315 , 1282 ,
 1315 , 1329 ,
 1300 , 1314 ,
@@ -98,8 +121,7 @@ a:add{
 1268 , 1282 ,
 }
 
-b=P.new()
-b:add{
+b=P.new():add{
 1290 , 1270 ,
 1335 , 1315 ,
 1250 , 1340 ,

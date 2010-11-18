@@ -1,8 +1,8 @@
 /*
 * lgpc.c
-* polygon library for Lua 5.0 based on gpc
+* polygon library for Lua 5.1 based on gpc
 * Luiz Henrique de Figueiredo <lhf@tecgraf.puc-rio.br>
-* 20 Jul 2006 09:15:01
+* 18 Nov 2010 19:34:04
 * This code is hereby placed in the public domain.
 */
 
@@ -18,14 +18,13 @@
 #include "lauxlib.h"
 
 #define MYNAME		"gpc"
-#define MYVERSION	MYNAME " library for " LUA_VERSION " / Jul 2006 / "\
+#define MYVERSION	MYNAME " library for " LUA_VERSION " / Nov 2010 / "\
 			"using gpc " GPC_VERSION
 #define MYTYPE		MYNAME " handle"
 
 static gpc_polygon *Pget(lua_State *L, int i)
 {
- if (luaL_checkudata(L,i,MYTYPE)==NULL) luaL_typerror(L,i,MYTYPE);
- return lua_touserdata(L,i);
+ return luaL_checkudata(L,i,MYTYPE);
 }
 
 static gpc_polygon *Pnew(lua_State *L)
@@ -58,12 +57,7 @@ static int Lclip(lua_State *L)			/** clip(p,q,op) */
 {
  static const int Iop[]= { GPC_DIFF, GPC_INT, GPC_XOR, GPC_UNION, };
  static const char *const Sop[] = { "-", "*", "^", "+", NULL};
-#ifndef LUA_VERSION_NUM
- int i=luaL_findstring(luaL_optstring(L,3,"*"),Sop);
- luaL_argcheck(L, i!=-1, 3, "invalid mode");
-#else
  int i=luaL_checkoption(L,3,"*",Sop);
-#endif
  return Pclip(L,Iop[i]);
 }
 
@@ -93,7 +87,7 @@ static int Ladd(lua_State *L)			/** add(p,c,[hole]) */
  gpc_vertex_list c;
  gpc_polygon *p=Pget(L,1);
  luaL_checktype(L,2,LUA_TTABLE); 
- n=luaL_getn(L,2)/2;
+ n=lua_objlen(L,2)/2;
  c.num_vertices=n;
  c.vertex=malloc(c.num_vertices*sizeof(*c.vertex));
  for (i=0; i<n; i++)
@@ -104,7 +98,8 @@ static int Ladd(lua_State *L)			/** add(p,c,[hole]) */
  }
  gpc_add_contour(p,&c,lua_toboolean(L,3));
  free(c.vertex);
- return 0;
+ lua_settop(L,1);
+ return 1;
 }
 
 static int Lget(lua_State *L)			/** get(p,[c,[i]]) */
@@ -124,7 +119,7 @@ static int Lget(lua_State *L)			/** get(p,[c,[i]]) */
  if (m==2)
  {
   lua_pushnumber(L,n);
-  lua_pushboolean(L,p->hole[c]);
+  lua_pushboolean(L,p->hole ? p->hole[c] : 0);
   return 2;
  }
  i=luaL_checkint(L,3);
@@ -137,6 +132,17 @@ static int Lget(lua_State *L)			/** get(p,[c,[i]]) */
  }
  else
   return 0;
+}
+
+static int Lstrip(lua_State *L)			/** strip(p) */
+{
+ gpc_tristrip s;
+ gpc_polygon *p=Pget(L,1);
+ gpc_polygon *r=Pnew(L);
+ gpc_polygon_to_tristrip(p,&s);
+ r->num_contours=s.num_strips;
+ r->contour=s.strip;
+ return 1;
 }
 
 static int Pio(lua_State *L, const char *mode)
@@ -154,7 +160,7 @@ static int Pio(lua_State *L, const char *mode)
  }
  (reading ? gpc_read_polygon : gpc_write_polygon)(f,holes,p);
  if (file!=NULL) fclose(f);
- lua_pushboolean(L,1); 
+ lua_settop(L,1);
  return 1;
 }
 
@@ -168,12 +174,10 @@ static int Lwrite(lua_State *L)			/** write(p,file,holes) */
  return Pio(L,"w");
 }
 
-static int Ltostring(lua_State *L)              /** tostring(p) */
+static int Ltostring(lua_State *L)
 {
  gpc_polygon *p=Pget(L,1);
- char s[64];
- sprintf(s,"%s %p",MYTYPE,(void*)p);
- lua_pushstring(L,s);
+ lua_pushfstring(L,"%s %p",MYTYPE,(void*)p);
  return 1;
 }
 
@@ -184,35 +188,34 @@ static int Lgc(lua_State *L)
  return 0;
 }
 
-static const luaL_reg R[] =
+static const luaL_Reg R[] =
 {
-	{ "__add",	Lunion		},
+	{ "__add",	Lunion		},	/** __add(p,q) */
 	{ "__gc",	Lgc		},
-	{ "__mul",	Lintersect	},
-	{ "__pow",	Lxor		},
-	{ "__sub",	Ldiff		},
+	{ "__mul",	Lintersect	},	/** __mul(p,q) */
+	{ "__pow",	Lxor		},	/** __pow(p,q) */
+	{ "__sub",	Ldiff		},	/** __sub(p,q) */
 	{ "__tostring",	Ltostring	},
 	{ "add",	Ladd		},
 	{ "clip",	Lclip		},
 	{ "get",	Lget		},
 	{ "new",	Lnew		},
 	{ "read",	Lread		},
-	{ "tostring",	Ltostring	},
+	{ "strip",	Lstrip		},
 	{ "write",	Lwrite		},
 	{ NULL,		NULL		}
 };
 
 LUALIB_API int luaopen_gpc(lua_State *L)
 {
- lua_pushliteral(L,MYNAME);
  luaL_newmetatable(L,MYTYPE);
- luaL_openlib(L,NULL,R,0);
+ lua_setglobal(L,MYNAME);
+ luaL_register(L,MYNAME,R);
  lua_pushliteral(L,"version");			/** version */
  lua_pushliteral(L,MYVERSION);
  lua_settable(L,-3);
  lua_pushliteral(L,"__index");
  lua_pushvalue(L,-2);
  lua_settable(L,-3);
- lua_rawset(L,LUA_GLOBALSINDEX);
  return 1;
 }
