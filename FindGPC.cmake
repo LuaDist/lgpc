@@ -16,10 +16,14 @@
 # GPC_FOUND	- True if GPC found.
 
 # Look for the header file.
-FIND_PATH(GPC_INCLUDE_DIR NAMES gpc.h)
+FIND_PATH(GPC_INCLUDE_DIR NAMES gpc.h
+  PATH_SUFFIXES gpcl # debian
+)
 
 # Look for the library.
-FIND_LIBRARY(GPC_LIBRARY NAMES gpc libgpc)
+FIND_LIBRARY(GPC_LIBRARY NAMES gpc libgpc
+  gpcl # debian
+)
 
 # Handle the QUIETLY and REQUIRED arguments and set GPC_FOUND to TRUE if all listed variables are TRUE.
 INCLUDE(FindPackageHandleStandardArgs)
