@@ -1,0 +1,15 @@
+--- This file is part of LuaDist project
+
+name = "lgpc"
+version = "5.1"
+
+desc = "Polygon library for Lua based on gpc."
+author = "Luiz Henrique de Figueiredo"
+license = "Public domain"
+url = "http://www.tecgraf.puc-rio.br/~lhf/ftp/lua/#lgpc"
+maintainer = "Peter Kapec"
+
+depends = {
+	"lua ~> 5.1",
+	"gpc >=2.32"
+}

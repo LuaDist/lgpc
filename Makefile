@@ -47,8 +47,7 @@ doc:
 
 # distribution
 
-FTP= www:www/ftp/lua/5.1
-F= http://www.tecgraf.puc-rio.br/~lhf/ftp/lua/5.1/$A
+FTP= $(HOME)/public/ftp/lua/5.1
 D= $(MYNAME)
 A= $(MYLIB).tar.gz
 TOTAR= Makefile,README,$(MYLIB).c,test.lua
@@ -56,11 +55,10 @@ TOTAR= Makefile,README,$(MYLIB).c,test.lua
 distr:	clean
 	tar zcvf $A -C .. $D/{$(TOTAR)}
 	touch -r $A .stamp
-	scp -p $A $(FTP)
+	mv $A $(FTP)
 
 diff:	clean
-	wget -q -N $F
-	tar zxf $A
+	tar zxf $(FTP)/$A
 	diff $D .
 
 # eof

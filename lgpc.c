@@ -2,7 +2,7 @@
 * lgpc.c
 * polygon library for Lua 5.1 based on gpc
 * Luiz Henrique de Figueiredo <lhf@tecgraf.puc-rio.br>
-* 18 Nov 2010 19:34:04
+* 27 Apr 2009 08:37:43
 * This code is hereby placed in the public domain.
 */
 
@@ -18,7 +18,7 @@
 #include "lauxlib.h"
 
 #define MYNAME		"gpc"
-#define MYVERSION	MYNAME " library for " LUA_VERSION " / Nov 2010 / "\
+#define MYVERSION	MYNAME " library for " LUA_VERSION " / Apr 2009 / "\
 			"using gpc " GPC_VERSION
 #define MYTYPE		MYNAME " handle"
 
@@ -87,7 +87,7 @@ static int Ladd(lua_State *L)			/** add(p,c,[hole]) */
  gpc_vertex_list c;
  gpc_polygon *p=Pget(L,1);
  luaL_checktype(L,2,LUA_TTABLE); 
- n=lua_objlen(L,2)/2;
+ n=luaL_getn(L,2)/2;
  c.num_vertices=n;
  c.vertex=malloc(c.num_vertices*sizeof(*c.vertex));
  for (i=0; i<n; i++)
@@ -188,7 +188,7 @@ static int Lgc(lua_State *L)
  return 0;
 }
 
-static const luaL_Reg R[] =
+static const luaL_reg R[] =
 {
 	{ "__add",	Lunion		},	/** __add(p,q) */
 	{ "__gc",	Lgc		},
