@@ -1,24 +1,20 @@
-# Copyright (C) 2007-2009 LuaDist.
+# Copyright (C) 2007-2011 LuaDist.
 # Created by Peter Kapec
 # Redistribution and use of this file is allowed according to the terms of the MIT license.
 # For details see the COPYRIGHT file distributed with LuaDist.
 # Please note that the package source code is licensed under its own license.
 
-PROJECT(lgpc C)
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
-INCLUDE(dist.cmake)
+project ( lgpc C )
+cmake_minimum_required ( VERSION 2.6 )
+include ( dist.cmake )
 
 # We need GPC to compile
-FIND_PACKAGE(GPC REQUIRED)
-INCLUDE_DIRECTORIES(${GPC_INCLUDE_DIRS})
+find_package ( GPC REQUIRED )
+include_directories ( ${GPC_INCLUDE_DIRS} )
 
-# Build
-ADD_LUA_MODULE(gpc lgpc.c gpc.def)
-TARGET_LINK_LIBRARIES(gpc ${GPC_LIBRARIES})
-
-# Install all files and documentation
-INSTALL (TARGETS gpc DESTINATION ${INSTALL_CMOD})
-INSTALL (FILES README DESTINATION ${INSTALL_DATA})
-INSTALL (FILES test.lua DESTINATION ${INSTALL_TEST})
+install_lua_module ( gpc lgpc.c gpc.def )
+target_link_libraries ( gpc ${GPC_LIBRARIES} )
+install_data ( README )
+install_test ( test.lua )
 
 add_lua_test ( test.lua )
