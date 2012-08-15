@@ -13,9 +13,6 @@ include ( lua )
 find_package ( GPC REQUIRED )
 include_directories ( ${GPC_INCLUDE_DIRS} )
 
-install_lua_module ( gpc lgpc.c gpc.def )
-target_link_libraries ( gpc ${GPC_LIBRARIES} )
+install_lua_module ( gpc lgpc.c gpc.def LINK ${GPC_LIBRARIES} )
 install_data ( README )
 install_test ( test.lua )
-
-add_lua_test ( test.lua )
