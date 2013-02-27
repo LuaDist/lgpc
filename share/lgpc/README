@@ -1,0 +1,30 @@
+This is a library for Boolean operations on polygons for Lua 5.1. It is based
+on gpc, written by Alan Murta and available at
+	http://www.cs.man.ac.uk/aig/staff/alan/software/
+
+To try this Lua library, first get gpc from the URL above. Open the zip file
+and save gpc.c and gpc.h in this diretory. (gpc consists of a single module,
+but I haven't included it here because it is copyrighted software, free only
+for non-commercial use.)
+
+Then edit Makefile to reflect your installation of Lua and run make. This
+will build the library and run a simple test. For detailed installation
+instructions, see
+	http://www.tecgraf.puc-rio.br/~lhf/ftp/lua/install.html
+
+There is no manual but the library is simple and intuitive; see the summary
+below. Read also test.lua, which shows the library in action. Display or print
+test.ps, which is output when you run "make test".
+
+This code is hereby placed in the public domain.
+Please send comments, suggestions, and bug reports to lhf@tecgraf.puc-rio.br .
+
+-------------------------------------------------------------------------------
+
+gpc library:
+ __add(p,q) 		 add(p,c,[hole]) 	 read(p,file,holes) 
+ __mul(p,q) 		 clip(p,q,op) 		 strip(p) 
+ __pow(p,q) 		 get(p,[c,[i]]) 	 version 
+ __sub(p,q) 		 new() 			 write(p,file,holes) 
+
+-------------------------------------------------------------------------------
